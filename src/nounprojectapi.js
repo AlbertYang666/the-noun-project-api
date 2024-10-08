@@ -1,6 +1,6 @@
 "use strict";
 
-const OAuth = require("oauth").OAuth;
+const { OAuth } = require("oauth");
 const Util = require("./utils");
 const baseUrl = "https://api.thenounproject.com/v2";
 
@@ -17,127 +17,117 @@ class NounProject {
     );
   }
 
-  addBlacklistTerms(dataJson, callback) {
+  async addBlacklistTerms(dataJson) {
     const path = "/client/blacklist/term";
-    this.post(path, dataJson, callback);
+    return this.post(path, dataJson);
   }
 
-  addBlacklistId(dataJson, callback, type = "icon") {
+  async addBlacklistId(dataJson, type = "icon") {
     const path = `/client/blacklist/id?type=${type}`;
-    this.post(path, dataJson, callback);
+    return this.post(path, dataJson);
   }
 
-  getBlacklist(callback) {
+  async getBlacklist() {
     const path = `/client/blacklist`;
-    this.get(path, {}, callback);
+    return this.get(path, {});
   }
 
-  getIconUsage(dataJson, callback) {
+  async getIconUsage(dataJson) {
     const path = `/client/report`;
-    this.post(path, dataJson, callback);
+    return this.post(path, dataJson);
   }
 
-  getUsage(callback) {
-    this.get("/client/usage", {}, callback);
+  async getUsage() {
+    return this.get("/client/usage", {});
   }
 
-  getListTerms(options, callback) {
-    this.get("/icon/autocomplete", options, callback);
+  async getListTerms(options) {
+    return this.get("/icon/autocomplete", options);
   }
 
-  getListCollection(options, callback) {
-    this.get("/collection", options, callback);
+  async getListCollection(options) {
+    return this.get("/collection", options);
   }
 
-  getListCollectionById(collectionId, options, callback) {
-    this.get(`/collection/${collectionId}`, options, callback);
+  async getListCollectionById(collectionId, options) {
+    return this.get(`/collection/${collectionId}`, options);
   }
 
-  getIconsByTerm(options, callback) {
+  async getIconsByTerm(options) {
     const path = "/icon/";
-    this.get(path, options, callback);
+    return this.get(path, options);
   }
 
-  downloadIconById(iconId, options, callback) {
+  async downloadIconById(iconId, options) {
     const path = `/icon/${iconId}/download`;
-    this.get(path, options, callback);
+    return this.get(path, options);
   }
 
-  getIconById(id, options, callback) {
+  async getIconById(id, options) {
     const path = `/icon/${id}`;
-    this.get(path, options, callback);
+    return this.get(path, options);
   }
 
-  getIconSvgById(id, options, callback) {
-    this.getIconById(id, options, (err, data) => {
-      if (err) {
-        callback(err);
+  async getIconSvgById(id, options) {
+    try {
+      const data = await this.getIconById(id, options);
+      const url = data.icon.icon_url;
+      if (url) {
+        return await Util.fetchSvg(url);
       } else {
-        const url = data.icon.icon_url;
-        if (url) {
-          Util.fetchSvg(url)
-            .then((svgString) => {
-              callback(null, svgString);
-            })
-            .catch((err) => {
-              callback(err);
-            });
-        } else {
-          callback(new Error("No icon URL found in response"));
-        }
+        throw new Error("No icon URL found in response");
       }
-    });
+    } catch (err) {
+      throw err;
+    }
   }
 
-  get(path, options, callback) {
+  async get(path, options) {
     const url = baseUrl + path + Util.objectToQueryString(options);
 
-    this.oauth.get(encodeURI(url), null, null, (err, data, res) => {
-      if (err) {
-        callback(
-          new Error(`Calling Noun Project API: ${url} ${JSON.stringify(err)}`)
-        );
-      } else if (res.statusCode !== 200) {
-        callback(`${res.statusCode} HTTP response code`);
-      } else {
-        try {
-          callback(null, JSON.parse(data));
-        } catch (parseError) {
-          callback(
-            new Error(`Error parsing JSON response: ${parseError.message}`)
-          );
+    return new Promise((resolve, reject) => {
+      this.oauth.get(encodeURI(url), null, null, (err, data, res) => {
+        if (err) {
+          reject(new Error(`Calling Noun Project API: ${url} ${JSON.stringify(err)}`));
+        } else if (res.statusCode !== 200) {
+          reject(new Error(`${res.statusCode} HTTP response code`));
+        } else {
+          try {
+            resolve(JSON.parse(data));
+          } catch (parseError) {
+            reject(new Error(`Error parsing JSON response: ${parseError.message}`));
+          }
         }
-      }
+      });
     });
   }
 
-  post(path, data, callback) {
+  async post(path, data) {
     const url = baseUrl + path;
     const jsonData = JSON.stringify(data);
-    this.oauth.post(
-      encodeURI(url),
-      null,
-      null,
-      jsonData,
-      "application/json",
-      (err, data, res) => {
-        if (err) {
-          callback(
-            new Error(`Calling Noun Project API: ${url} ${JSON.stringify(err)}`)
-          );
-        } else if (res.statusCode !== 200) {
-          callback(`${res.statusCode} HTTP response code`);
-        } else {
-          try {
-            callback(null, JSON.parse(data));
-          } catch (parseError) {
-            callback(
-              new Error(`Error parsing JSON response: ${parseError.message}`)
-            );
+
+    return new Promise((resolve, reject) => {
+      this.oauth.post(
+        encodeURI(url),
+        null,
+        null,
+        jsonData,
+        "application/json",
+        (err, data, res) => {
+          if (err) {
+            reject(new Error(`Calling Noun Project API: ${url} ${JSON.stringify(err)}`));
+          } else if (res.statusCode !== 200) {
+            reject(new Error(`${res.statusCode} HTTP response code`));
+          } else {
+            try {
+              resolve(JSON.parse(data));
+            } catch (parseError) {
+              reject(new Error(`Error parsing JSON response: ${parseError.message}`));
+            }
           }
         }
-      }
-    );
+      );
+    });
   }
 }
 
