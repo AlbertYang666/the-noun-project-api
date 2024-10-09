@@ -1,6 +1,6 @@
 {
   "name": "the-noun-project-api",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "The Noun Project's v2 API",
   "main": "index.js",
   "scripts": {
@@ -28,6 +28,7 @@
   "homepage": "https://github.com/AlbertYang666/the-noun-project-api#readme",
   "files": [
     "index.js",
+    "index.d.ts",
     "lib/"
   ],
   "dependencies": {

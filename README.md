@@ -2,6 +2,7 @@
 
 The Noun Project's V2 API node.js Tools
 
+[![npm version](https://badge.fury.io/js/the-noun-project-api.svg)](http://badge.fury.io/js/the-noun-project-api)
 ## Installation
 
 Simply add to your project with
