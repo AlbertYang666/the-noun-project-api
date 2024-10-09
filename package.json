@@ -1,6 +1,6 @@
 {
   "name": "the-noun-project-api",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "The Noun Project's v2 API",
   "main": "index.js",
   "scripts": {
