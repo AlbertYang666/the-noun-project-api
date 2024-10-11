@@ -1,5 +1,5 @@
 "use strict";
-const axios = require("axios");
+const fetch = require("node-fetch");
 
 const objectToQueryString = (obj) => {
   const parts = Object.keys(obj).map(
@@ -10,13 +10,14 @@ const objectToQueryString = (obj) => {
 
 const fetchSvg = async (url) => {
   try {
-    const response = await axios.get(url, {
+    const response = await fetch(url, {
       headers: {
         Accept: "image/svg+xml",
       },
     });
-    if (response.status === 200) {
-      const svgString = response.data;
+
+    if (response.ok) {
+      const svgString = await response.text();
       return svgString;
     } else {
       throw new Error(`HTTP response code: ${response.status}`);
