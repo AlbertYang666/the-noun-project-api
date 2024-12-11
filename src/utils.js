@@ -3,7 +3,7 @@ const fetch = require("node-fetch");
 
 const objectToQueryString = (obj) => {
   const parts = Object.keys(obj).map(
-    (key) => `${encodeURIComponent(key)}=${encodeURIComponent(obj[key])}`
+    (key) => `${key}=${obj[key]}`
   );
   return parts.length > 0 ? `?${parts.join("&")}` : "";
 };
